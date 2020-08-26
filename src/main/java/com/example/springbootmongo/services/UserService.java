@@ -5,6 +5,7 @@ import com.example.springbootmongo.dto.UserDTO;
 import com.example.springbootmongo.repository.UserRepository;
 import com.example.springbootmongo.services.exception.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,8 +21,8 @@ public class UserService {
     }
 
     public User findById(String id) {
-        Optional<User> user = repo.findById(id);
-        return user.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado!"));
+        Optional<User> userOptional = repo.findById(id);
+        return userOptional.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado!"));
     }
 
     public User insert(User obj) {
@@ -29,11 +30,22 @@ public class UserService {
     }
 
     public void delete(String id) {
-        findById(id);
-        repo.deleteById(id);
+        User user = this.findById(id);
+        repo.deleteById(user.getId());
     }
 
-    public User fromDTO(UserDTO objDto)  {
+    public User update(User obj) {
+        User user = this.findById(obj.getId());
+        this.updateData(user, obj);
+        return repo.save(user);
+    }
+
+    private void updateData(User user, User obj) {
+        user.setName(obj.getName());
+        user.setEmail(obj.getEmail());
+    }
+
+    public User fromDTO(UserDTO objDto) {
         return new User(objDto.getId(), objDto.getName(), objDto.getEmail());
     }
 }
